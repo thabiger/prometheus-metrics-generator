@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metrics Generator</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Metrics Generator</h1>
+            <p>Generate sinusoidal Prometheus metrics for testing KEDA scaling</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Create Metric Button -->
+            <div class="card">
+                <h2>📊 Metrics Management</h2>
+                <p>Create and manage generated metrics for testing scenarios.</p>
+                <button class="btn btn-primary" onclick="createMetric()">
+                    ➕ Create New Metric
+                </button>
+            </div>
+
+            <!-- Active Metrics -->
+            <div class="card">
+                <h2>📈 Active Metrics</h2>
+                <div id="metrics-container">
+                    {% for metric_name, config in metrics.items() %}
+                    <div class="metric-card" data-metric="{{ metric_name }}">
+                        <div class="metric-header">
+                            <h3>{{ metric_name }}</h3>
+                            <div class="metric-actions">
+                                <button class="btn btn-warning btn-sm" onclick="editMetric('{{ metric_name }}')">
+                                    Edit
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="removeMetric('{{ metric_name }}')">
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="metric-content">
+                            <div class="metric-info-section">
+                                <div class="metric-details">
+                                    <div class="metric-parameters">
+                                        <div class="parameter-group">
+                                            <h4>📊 Parameters</h4>
+                                            <div class="parameter-item">
+                                                <span class="parameter-label">Waveform:</span>
+                                                <span class="parameter-value waveform-type">{{ config.get('waveform_type', 'sinusoidal') }}</span>
+                                            </div>
+                                            <div class="parameter-item">
+                                                <span class="parameter-label">Base Value:</span>
+                                                <div class="parameter-control">
+                                                    <button type="button" class="btn-minus" onclick="adjustMetricValue('{{ metric_name }}', 'base_value', -1)">−</button>
+                                                    <span class="parameter-value">{{ config.base_value }}</span>
+                                                    <button type="button" class="btn-plus" onclick="adjustMetricValue('{{ metric_name }}', 'base_value', 1)">+</button>
+                                                </div>
+                                            </div>
+                                            {% if config.get('waveform_type', 'sinusoidal') != 'static' %}
+                                            <div class="parameter-item">
+                                                <span class="parameter-label">Amplitude:</span>
+                                                <div class="parameter-control">
+                                                    <button type="button" class="btn-minus" onclick="adjustMetricValue('{{ metric_name }}', 'amplitude', -1)">−</button>
+                                                    <span class="parameter-value">{{ config.amplitude }}</span>
+                                                    <button type="button" class="btn-plus" onclick="adjustMetricValue('{{ metric_name }}', 'amplitude', 1)">+</button>
+                                                </div>
+                                            </div>
+                                            <div class="parameter-item">
+                                                <span class="parameter-label">Period:</span>
+                                                <div class="parameter-control">
+                                                    <button type="button" class="btn-minus" onclick="adjustMetricValue('{{ metric_name }}', 'period', -5)">−</button>
+                                                    <span class="parameter-value">{{ config.period }}s</span>
+                                                    <button type="button" class="btn-plus" onclick="adjustMetricValue('{{ metric_name }}', 'period', 5)">+</button>
+                                                </div>
+                                            </div>
+                                            <div class="parameter-item">
+                                                <span class="parameter-label">Phase Offset:</span>
+                                                <div class="parameter-control">
+                                                    <button type="button" class="btn-minus" onclick="adjustMetricValue('{{ metric_name }}', 'phase_offset', -0.1)">−</button>
+                                                    <span class="parameter-value">{{ config.phase_offset }}</span>
+                                                    <button type="button" class="btn-plus" onclick="adjustMetricValue('{{ metric_name }}', 'phase_offset', 0.1)">+</button>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                            <div class="parameter-item">
+                                                <span class="parameter-label">Update Interval:</span>
+                                                <div class="parameter-control">
+                                                    <button type="button" class="btn-minus" onclick="adjustMetricValue('{{ metric_name }}', 'update_interval', -0.1)">−</button>
+                                                    <span class="parameter-value">{{ config.update_interval }}s</span>
+                                                    <button type="button" class="btn-plus" onclick="adjustMetricValue('{{ metric_name }}', 'update_interval', 0.1)">+</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="parameter-group preview-group">
+                                            <h4>📊 Live Preview</h4>
+                                            <div class="preview-controls">
+                                                <div class="time-scope-controls">
+                                                    <label>Time Scope:</label>
+                                                    <button type="button" class="btn-time-scope" onclick="setTimeScope('{{ metric_name }}', 60)" title="1 minute">1m</button>
+                                                    <button type="button" class="btn-time-scope" onclick="setTimeScope('{{ metric_name }}', 120)" title="2 minutes">2m</button>
+                                                    <button type="button" class="btn-time-scope" onclick="setTimeScope('{{ metric_name }}', 300)" title="5 minutes">5m</button>
+                                                    <button type="button" class="btn-time-scope" onclick="setTimeScope('{{ metric_name }}', 600)" title="10 minutes">10m</button>
+                                                    <button type="button" class="btn-time-scope" onclick="setTimeScope('{{ metric_name }}', 1800)" title="30 minutes">30m</button>
+                                                    <button type="button" class="btn-time-scope" onclick="setTimeScope('{{ metric_name }}', 3600)" title="60 minutes">60m</button>
+                                                </div>
+                                            </div>
+                                            <canvas id="preview-{{ metric_name }}" width="300" height="200"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="range-section">
+                            <h4>📈 Value Range</h4>
+                            <div class="range-display">
+                                <div class="range-min">{{ (config.base_value - config.amplitude)|round(1) }}</div>
+                                <div class="range-bar">
+                                    <div class="range-indicator" style="left: 50%;"></div>
+                                </div>
+                                <div class="range-max">{{ (config.base_value + config.amplitude)|round(1) }}</div>
+                            </div>
+                            <div class="range-text">
+                                <strong>Min:</strong> {{ (config.base_value - config.amplitude)|round(1) }} | 
+                                <strong>Max:</strong> {{ (config.base_value + config.amplitude)|round(1) }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Prometheus Info -->
+            <div class="card">
+                <h2>🔗 Prometheus Integration</h2>
+                <div class="info-section">
+                    <h3>Metrics Endpoint</h3>
+                    <code>http://localhost:9100/metrics</code>
+                    <button class="btn btn-secondary btn-sm" onclick="copyToClipboard('http://localhost:9100/metrics')">
+                        Copy
+                    </button>
+                </div>
+                
+                <div class="info-section">
+                    <h3>Metric Names</h3>
+                    <p>All metrics are prefixed with <code>generator_</code></p>
+                    <div id="metric-names">
+                        {% for metric_name in metrics.keys() %}
+                        <code>{{ metric_name }}</code>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="info-section">
+                    <h3>Prometheus Query Examples</h3>
+                    <div class="query-examples">
+                        <div class="query">
+                            <strong>Current value:</strong>
+                            <code>generator_cpu_usage</code>
+                        </div>
+                        <div class="query">
+                            <strong>Average over 5 minutes:</strong>
+                            <code>avg_over_time(generator_cpu_usage[5m])</code>
+                        </div>
+                        <div class="query">
+                            <strong>Rate of change:</strong>
+                            <code>rate(generator_cpu_usage[1m])</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Metric Modal (Create/Edit) -->
+    <div id="metric-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">✏️ Edit Metric</h2>
+                <span class="close" onclick="closeMetricModal()">&times;</span>
+            </div>
+            <form id="metric-form">
+                <div class="form-group" id="metric-name-group">
+                    <label for="metric_name">Metric Name:</label>
+                    <input type="text" id="metric_name" name="metric_name" required 
+                           placeholder="e.g., cpu_usage, memory_usage" pattern="[a-zA-Z0-9_]+">
+                    <small>Unique identifier for the metric (alphanumeric + underscore). Will be prefixed with "generator_" automatically.</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="waveform_type">Waveform Type:</label>
+                    <select id="waveform_type" name="waveform_type">
+                        <option value="sinusoidal">🌊 Sinusoidal</option>
+                        <option value="square">⬜ Square Wave</option>
+                        <option value="triangle">🔺 Triangle Wave</option>
+                        <option value="sawtooth">🔺 Sawtooth Wave</option>
+                        <option value="static">📊 Static</option>
+                    </select>
+                    <small>Type of waveform to generate</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="base_value">Base Value:</label>
+                    <input type="number" id="base_value" name="base_value" step="0.1">
+                    <small>Center value of the waveform</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="amplitude">Amplitude:</label>
+                    <input type="number" id="amplitude" name="amplitude" step="0.1" min="0">
+                    <small>Peak deviation from base value</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="period">Period (seconds):</label>
+                    <input type="number" id="period" name="period" step="1" min="1">
+                    <small>Time for one complete cycle</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phase_offset">Phase Offset:</label>
+                    <input type="number" id="phase_offset" name="phase_offset" step="0.1">
+                    <small>Phase shift in radians</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="update_interval">Update Interval (seconds):</label>
+                    <input type="number" id="update_interval" name="update_interval" step="0.1" min="0.1">
+                    <small>How often to update the metric value</small>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeMetricModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="submit-button">Update Metric</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
