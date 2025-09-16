@@ -17,14 +17,15 @@ The idea is simple: provide a metric generator that can be used as input for the
 ## Usage
 
 1. Run the application:
-   ```docker run -p 8001:8001 -p 9100:9100 prometheus-metrics-generator
-   ```
+```
+docker run -p 8001:8001 -p 9100:9100 prometheus-metrics-generator
+```
 
 2. Open your browser to `http://localhost:8001`
 
-3. **Create Metrics**:
+3. Create Metrics using Web GUI
 
-4. **Access Prometheus metrics** at `http://localhost:9100/metrics`
+4. Access Prometheus metrics at `http://localhost:9100/metrics`
 
 ## Configuration
 
