@@ -10,7 +10,7 @@
     <div class="container">
         <header>
             <h1>📊 Metrics Generator</h1>
-            <p>Generate sinusoidal Prometheus metrics for testing KEDA scaling</p>
+            <p>Generate Prometheus metrics for testing purposes</p>
         </header>
 
         <div class="main-content">
@@ -115,20 +115,6 @@
                             </div>
                         </div>
                         
-                        <div class="range-section">
-                            <h4>📈 Value Range</h4>
-                            <div class="range-display">
-                                <div class="range-min">{{ (config.base_value - config.amplitude)|round(1) }}</div>
-                                <div class="range-bar">
-                                    <div class="range-indicator" style="left: 50%;"></div>
-                                </div>
-                                <div class="range-max">{{ (config.base_value + config.amplitude)|round(1) }}</div>
-                            </div>
-                            <div class="range-text">
-                                <strong>Min:</strong> {{ (config.base_value - config.amplitude)|round(1) }} | 
-                                <strong>Max:</strong> {{ (config.base_value + config.amplitude)|round(1) }}
-                            </div>
-                        </div>
                     </div>
                     {% endfor %}
                 </div>

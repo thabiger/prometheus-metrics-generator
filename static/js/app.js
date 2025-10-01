@@ -71,7 +71,7 @@ function createMetric() {
     // Reset form with default values
     document.getElementById('metric-form').reset();
     document.getElementById('waveform_type').value = 'sinusoidal';
-    document.getElementById('base_value').value = 50;
+    document.getElementById('base_value').value = 0;
     document.getElementById('amplitude').value = 20;
     document.getElementById('period').value = 60;
     document.getElementById('phase_offset').value = 0;
@@ -296,7 +296,7 @@ function drawSinusoidalPreview(canvasId, config) {
     ctx.clearRect(0, 0, width, height);
     
     // Set up drawing parameters
-    const baseValue = config.base_value || 50;
+    const baseValue = config.base_value || 0;
     const amplitude = config.amplitude || 20;
     const period = config.period || 60;
     const phaseOffset = config.phase_offset || 0;
@@ -311,17 +311,41 @@ function drawSinusoidalPreview(canvasId, config) {
     const maxValue = baseValue + amplitude;
     const range = maxValue - minValue;
     
-    // Draw axes
+    // Draw grid lines
     ctx.strokeStyle = '#e0e0e0';
     ctx.lineWidth = 1;
     
-    // Horizontal axis (time)
+    // Draw horizontal grid lines (value lines)
+    const horizontalLines = 8; // Number of horizontal lines
+    for (let i = 0; i <= horizontalLines; i++) {
+        const y = (i / horizontalLines) * height;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+    }
+    
+    // Draw vertical grid lines (time lines)
+    const verticalLines = 12; // Number of vertical lines
+    for (let i = 0; i <= verticalLines; i++) {
+        const x = (i / verticalLines) * width;
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+    }
+    
+    // Draw main axes with slightly thicker lines
+    ctx.strokeStyle = '#b0b0b0';
+    ctx.lineWidth = 2;
+    
+    // Horizontal axis (time) - center line
     ctx.beginPath();
     ctx.moveTo(0, height / 2);
     ctx.lineTo(width, height / 2);
     ctx.stroke();
     
-    // Vertical axis (value)
+    // Vertical axis (value) - center line
     ctx.beginPath();
     ctx.moveTo(width / 2, 0);
     ctx.lineTo(width / 2, height);

@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus-metrics-generator
+  labels:
+    metrics: enabled
+    release: kube-prometheus-stack
+spec:
+  type: LoadBalancer
+  selector:
+    app: prometheus-metrics-generator
+  ports:
+    - protocol: TCP
+      port: 8001
+      targetPort: 8001
+      name: web
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus-metrics-generator-metrics
+  labels:
+    app: prometheus-metrics-generator
+    metrics: enabled
+spec:
+  selector:
+    app: prometheus-metrics-generator
+  ports:
+    - name: metrics
+      protocol: TCP
+      port: 9100
+      targetPort: 9100
+  type: ClusterIP

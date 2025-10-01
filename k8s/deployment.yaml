@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: metrics-generator
+  name: prometheus-metrics-generator
   namespace: keda-testing
   labels:
-    app: metrics-generator
+    app: prometheus-metrics-generator
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: metrics-generator
+      app: prometheus-metrics-generator
   template:
     metadata:
       labels:
-        app: metrics-generator
+        app: prometheus-metrics-generator
     spec:
       containers:
-      - name: metrics-generator
-        image: metrics-generator:latest
+      - name: prometheus-metrics-generator
+        image: thabiger/prometheus-metrics-generator:latest
         ports:
         - containerPort: 8001
           name: web
@@ -45,13 +45,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: metrics-generator
+  name: prometheus-metrics-generator
   namespace: keda-testing
   labels:
-    app: metrics-generator
+    app: prometheus-metrics-generator
 spec:
   selector:
-    app: metrics-generator
+    app: prometheus-metrics-generator
   ports:
   - name: web
     port: 8001
@@ -64,14 +64,15 @@ spec:
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: metrics-generator
+  name: prometheus-metrics-generator
   namespace: keda-testing
   labels:
-    app: metrics-generator
+    app: prometheus-metrics-generator
+    release: kube-prometheus-stack
 spec:
   selector:
     matchLabels:
-      app: metrics-generator
+      app: prometheus-metrics-generator
   endpoints:
   - port: metrics
     interval: 30s
